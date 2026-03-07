@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Google Docs Toolbar Enhancer",
+  "version": "1.0.0",
+  "description": "Adds missing formatting buttons (Strikethrough, Change Case) to the Google Docs toolbar.",
+  "permissions": ["activeTab", "storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://docs.google.com/*"],
+      "js": ["content/content.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

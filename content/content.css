@@ -1,0 +1,132 @@
+/* Google Docs Toolbar Enhancer */
+
+/* Container — inline with toolbar flow */
+.gdte-container {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  height: 100%;
+}
+
+/* Separator — matches native Google Docs toolbar dividers */
+.gdte-separator {
+  width: 1px;
+  height: 20px;
+  margin: 0 6px;
+  background-color: #c7c7c7;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Button — matches native B/I/U button sizing */
+.gdte-btn {
+  width: 30px;
+  height: 30px;
+  margin: 0 1px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #444746;
+  background: transparent;
+  transition: background-color 0.12s ease;
+  box-sizing: border-box;
+  vertical-align: middle;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gdte-btn:hover {
+  background-color: #e8eaed;
+}
+
+.gdte-btn:active,
+.gdte-btn.gdte-active {
+  background-color: #d3d3d3;
+}
+
+/* Icon inside button */
+.gdte-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Change Case button — slightly wider for "Aa" + arrow */
+.gdte-case-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.gdte-case-btn {
+  width: auto;
+  padding: 0 6px;
+  gap: 3px;
+}
+
+.gdte-case-label {
+  font-family: 'Google Sans', 'Roboto', Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  user-select: none;
+  line-height: 1;
+  color: #444746;
+}
+
+.gdte-dropdown-arrow {
+  width: 8px;
+  height: 5px;
+  display: block;
+  color: #444746;
+  flex-shrink: 0;
+}
+
+/* Dropdown menu */
+.gdte-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 10000;
+  min-width: 150px;
+  padding: 6px 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08);
+  font-family: 'Google Sans', 'Roboto', Arial, sans-serif;
+  font-size: 14px;
+}
+
+.gdte-dropdown.gdte-dropdown-open {
+  display: block;
+}
+
+.gdte-dropdown-item {
+  padding: 8px 20px;
+  cursor: pointer;
+  color: #202124;
+  user-select: none;
+  white-space: nowrap;
+  transition: background-color 0.1s;
+}
+
+.gdte-dropdown-item:hover {
+  background-color: #f1f3f4;
+}
+
+.gdte-dropdown-item:active {
+  background-color: #e8eaed;
+}
+
+/* Tooltip — rely on Google Docs native tooltip via data-tooltip */
+.gdte-btn[data-tooltip] {
+  position: relative;
+}

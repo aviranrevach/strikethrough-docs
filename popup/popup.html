@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toolbar Enhancer Settings</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <h1 class="popup-title">Toolbar Enhancer</h1>
+    <p class="popup-subtitle">Choose which buttons appear in Google Docs</p>
+
+    <div class="toggle-list">
+      <label class="toggle-row">
+        <span class="toggle-info">
+          <span class="toggle-label">Strikethrough</span>
+          <span class="toggle-desc">Add a strikethrough button to the toolbar</span>
+        </span>
+        <input type="checkbox" id="toggle-strikethrough" class="toggle-input">
+        <span class="toggle-switch"></span>
+      </label>
+
+      <label class="toggle-row">
+        <span class="toggle-info">
+          <span class="toggle-label">Change Case</span>
+          <span class="toggle-desc">Add a change case dropdown to the toolbar</span>
+        </span>
+        <input type="checkbox" id="toggle-changeCase" class="toggle-input">
+        <span class="toggle-switch"></span>
+      </label>
+    </div>
+
+    <div class="popup-footer">
+      <span class="status" id="status"></span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
