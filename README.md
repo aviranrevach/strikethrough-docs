@@ -20,7 +20,7 @@
 ███████╗██║ ╚████║██║  ██║██║  ██║██║ ╚████║╚██████╗███████╗██║  ██║
 ╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝╚══════╝╚═╝  ╚═╝
 ```
-
+By Aviran Revach 
 A Chrome extension that brings back missing formatting buttons to the Google Docs toolbar.
 
 ## Features

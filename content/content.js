@@ -238,13 +238,18 @@
     btn.id = BUTTONS_CONFIG.strikethrough.id;
     btn.className = `${EXTENSION_PREFIX}-btn`;
     btn.setAttribute('role', 'button');
-    btn.setAttribute('data-tooltip', 'Strikethrough');
-    btn.setAttribute('aria-label', 'Strikethrough');
+    const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+    const shortcut = isMac ? '⌘⇧X' : 'Alt+Shift+5';
+    btn.setAttribute('data-tooltip', `Strikethrough (${shortcut})`);
+    btn.setAttribute('aria-label', `Strikethrough (${shortcut})`);
     btn.setAttribute('tabindex', '0');
 
     btn.innerHTML = `
       <svg viewBox="0 0 24 24" class="${EXTENSION_PREFIX}-icon" xmlns="http://www.w3.org/2000/svg">
-        <path d="M10 19h4v-3h-4v3zM5 4v3h5v3h4V7h5V4H5zM3 14h18v-2H3v2z" fill="currentColor"/>
+        <path d="M2.5 12.5h19v-1.2h-19v1.2z" fill="currentColor"/>
+        <text x="12" y="12.2" text-anchor="middle" dominant-baseline="central"
+              font-family="Arial, sans-serif" font-size="19" font-weight="700"
+              fill="currentColor">S</text>
       </svg>
     `;
 
@@ -316,15 +321,23 @@
     dropdown.className = `${EXTENSION_PREFIX}-dropdown`;
 
     const options = [
-      { label: 'UPPERCASE' },
-      { label: 'lowercase' },
-      { label: 'Title Case' },
+      { label: 'UPPERCASE', icon: 'AA' },
+      { label: 'lowercase', icon: 'aa' },
+      { label: 'Title Case', icon: 'Ab' },
     ];
 
     options.forEach((opt) => {
       const item = document.createElement('div');
       item.className = `${EXTENSION_PREFIX}-dropdown-item`;
-      item.textContent = opt.label;
+
+      const icon = document.createElement('span');
+      icon.className = `${EXTENSION_PREFIX}-dropdown-icon`;
+      icon.textContent = opt.icon;
+      item.appendChild(icon);
+
+      const label = document.createElement('span');
+      label.textContent = opt.label;
+      item.appendChild(label);
       item.setAttribute('role', 'menuitem');
 
       item.addEventListener('mousedown', (e) => {
