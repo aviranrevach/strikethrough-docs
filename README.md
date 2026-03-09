@@ -23,6 +23,8 @@
 By Aviran Revach 
 A Chrome extension that brings back missing formatting buttons to the Google Docs toolbar.
 
+![Strikethrough and font options in the Google Docs toolbar](Screenshot-strikethrough.png)
+
 ## Features
 
 - **Strikethrough** — One-click ~~strikethrough~~ right from the toolbar
