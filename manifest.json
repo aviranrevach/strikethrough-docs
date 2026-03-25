@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Google Docs Toolbar Enhancer",
-  "version": "1.0.0",
-  "description": "Adds missing formatting buttons (Strikethrough, Change Case) to the Google Docs toolbar.",
+  "version": "1.1.0",
+  "description": "Adds missing toolbar buttons to Google Docs & Sheets — Strikethrough, Change Case, Insert Image from Drive, and Randomize Range.",
   "permissions": ["activeTab", "storage"],
   "content_scripts": [
     {

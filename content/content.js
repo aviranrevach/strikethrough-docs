@@ -2,9 +2,12 @@
   'use strict';
 
   const EXTENSION_PREFIX = 'gdte';
+  const CONTAINER_ID = `${EXTENSION_PREFIX}-toolbar`;
   const BUTTONS_CONFIG = {
     strikethrough: { id: `${EXTENSION_PREFIX}-strikethrough` },
-    changeCase: { id: `${EXTENSION_PREFIX}-change-case` }
+    insertImageDrive: { id: `${EXTENSION_PREFIX}-insert-image` },
+    changeCase: { id: `${EXTENSION_PREFIX}-change-case` },
+    randomizeRange: { id: `${EXTENSION_PREFIX}-randomize-range` }
   };
 
   let settings = {};
@@ -12,11 +15,22 @@
   let changeCaseDropdownOpen = false;
   let menuBusy = false;
 
+  function isSheets() {
+    return location.pathname.includes('/spreadsheets/');
+  }
+
   // --- Settings ---
 
   function loadSettings() {
     return new Promise((resolve) => {
-      chrome.storage.sync.get({ enabledButtons: { strikethrough: true, changeCase: true } }, (result) => {
+      chrome.storage.sync.get({
+        enabledButtons: {
+          strikethrough: true,
+          changeCase: true,
+          insertImageDrive: true,
+          randomizeRange: true
+        }
+      }, (result) => {
         settings = result.enabledButtons;
         resolve(settings);
       });
@@ -30,8 +44,8 @@
     }
   });
 
-  // --- Google Docs Menu Automation ---
-  // Google Docs uses Google Closure Library for menus.
+  // --- Google Docs / Sheets Menu Automation ---
+  // Both apps use Google Closure Library for menus.
   // - Top-level menus open on mousedown
   // - Submenu parents open their submenu on mouseover/mouseenter (NOT click)
   // - Leaf menu items activate on click
@@ -52,14 +66,12 @@
   }
 
   function hoverItem(el) {
-    // Hover to highlight and open submenu (Closure pattern)
     el.dispatchEvent(new MouseEvent('mouseover', mouseOpts(el)));
     el.dispatchEvent(new MouseEvent('mouseenter', mouseOpts(el)));
     el.dispatchEvent(new MouseEvent('mousemove', mouseOpts(el)));
   }
 
   function clickItem(el) {
-    // Full click sequence for leaf menu items
     const opts = mouseOpts(el);
     el.dispatchEvent(new MouseEvent('mousedown', opts));
     el.dispatchEvent(new MouseEvent('mouseup', opts));
@@ -73,8 +85,6 @@
   }
 
   function findVisibleMenuItem(label) {
-    // Search menus that are in the DOM and not display:none
-    // (we use opacity:0 to hide them visually, so skip visibility check)
     const menus = document.querySelectorAll('.goog-menu');
     for (const menu of menus) {
       const style = window.getComputedStyle(menu);
@@ -107,9 +117,6 @@
   }
 
   function hideMenus() {
-    // Inject a style to make menus invisible while we automate them.
-    // Uses opacity:0 so elements stay in the DOM and receive events,
-    // but the user sees no menu flicker.
     const style = document.createElement('style');
     style.id = `${EXTENSION_PREFIX}-menu-cloak`;
     style.textContent = `
@@ -131,11 +138,9 @@
     if (menuBusy) return false;
     menuBusy = true;
 
-    // Hide all menus visually so the user sees nothing
     const cloak = hideMenus();
 
     try {
-      // Step 1: Open the top-level menu
       const topLabel = labels[0];
       const topMenu = document.getElementById(`docs-${topLabel.toLowerCase()}-menu`);
       if (!topMenu) {
@@ -146,7 +151,6 @@
       topMenu.dispatchEvent(new MouseEvent('mousedown', mouseOpts(topMenu)));
       await sleep(350);
 
-      // Step 2: Navigate through items
       for (let i = 1; i < labels.length; i++) {
         const label = labels[i];
         const isLast = i === labels.length - 1;
@@ -200,13 +204,28 @@
     return null;
   }
 
+  function allButtonsPresent() {
+    for (const key of Object.keys(BUTTONS_CONFIG)) {
+      if (key === 'randomizeRange' && !isSheets()) continue;
+      if (!document.getElementById(BUTTONS_CONFIG[key].id)) return false;
+    }
+    return true;
+  }
+
   function injectButtons() {
-    if (document.getElementById(BUTTONS_CONFIG.strikethrough.id)) return true;
+    const existing = document.getElementById(CONTAINER_ID);
+    if (existing && allButtonsPresent()) return true;
+
+    // Remove stale container from a previous version or toolbar rebuild
+    if (existing) existing.remove();
+    document.querySelectorAll(`.${EXTENSION_PREFIX}-container`).forEach(el => el.remove());
+    injectedButtons = {};
 
     const insertion = getInsertionReference();
     if (!insertion || !insertion.parent) return false;
 
     const container = document.createElement('div');
+    container.id = CONTAINER_ID;
     container.className = `${EXTENSION_PREFIX}-container`;
 
     const separator = document.createElement('div');
@@ -217,9 +236,19 @@
     injectedButtons.strikethrough = strikeBtn;
     container.appendChild(strikeBtn);
 
+    const imgBtn = createInsertImageButton();
+    injectedButtons.insertImageDrive = imgBtn;
+    container.appendChild(imgBtn);
+
     const caseBtn = createChangeCaseButton();
     injectedButtons.changeCase = caseBtn;
     container.appendChild(caseBtn);
+
+    if (isSheets()) {
+      const randBtn = createRandomizeRangeButton();
+      injectedButtons.randomizeRange = randBtn;
+      container.appendChild(randBtn);
+    }
 
     if (insertion.reference) {
       insertion.parent.insertBefore(container, insertion.reference);
@@ -253,7 +282,6 @@
       </svg>
     `;
 
-    // Prevent mousedown from stealing focus/selection from the document
     btn.addEventListener('mousedown', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -266,6 +294,65 @@
     });
 
     return btn;
+  }
+
+  // --- Insert Image (Drive) Button ---
+
+  function createInsertImageButton() {
+    const btn = document.createElement('div');
+    btn.id = BUTTONS_CONFIG.insertImageDrive.id;
+    btn.className = `${EXTENSION_PREFIX}-btn`;
+    btn.setAttribute('role', 'button');
+    btn.setAttribute('data-tooltip', 'Insert image from Drive');
+    btn.setAttribute('aria-label', 'Insert image from Drive');
+    btn.setAttribute('tabindex', '0');
+
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" class="${EXTENSION_PREFIX}-icon" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M3 16l4.5-4.5 3 3 4-5L21 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+      </svg>
+    `;
+
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isSheets()) {
+        insertImageSheets();
+      } else {
+        navigateMenu('Insert', 'Image', 'Drive');
+      }
+    });
+
+    return btn;
+  }
+
+  async function insertImageSheets() {
+    const success = await navigateMenu('Insert', 'Image', 'Insert image in cell');
+    if (success) {
+      await sleep(800);
+      tryFocusDriveInPicker();
+    }
+  }
+
+  async function tryFocusDriveInPicker() {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const driveTab = document.querySelector('[data-value="drive"]')
+        || [...document.querySelectorAll('.picker-navitem, [role="tab"]')].find(el =>
+          el.textContent.trim().includes('Drive')
+        );
+      if (driveTab) {
+        clickItem(driveTab);
+        return;
+      }
+      await sleep(400);
+    }
   }
 
   // --- Change Case Button ---
@@ -373,14 +460,52 @@
     changeCaseDropdownOpen = false;
   }
 
+  // --- Randomize Range Button (Sheets only) ---
+
+  function createRandomizeRangeButton() {
+    const btn = document.createElement('div');
+    btn.id = BUTTONS_CONFIG.randomizeRange.id;
+    btn.className = `${EXTENSION_PREFIX}-btn`;
+    btn.setAttribute('role', 'button');
+    btn.setAttribute('data-tooltip', 'Randomize range');
+    btn.setAttribute('aria-label', 'Randomize range');
+    btn.setAttribute('tabindex', '0');
+
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" class="${EXTENSION_PREFIX}-icon" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.18zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4zM14.83 13.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04z"
+              fill="currentColor"/>
+      </svg>
+    `;
+
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      navigateMenu('Data', 'Randomize range');
+    });
+
+    return btn;
+  }
+
   // --- Visibility ---
 
   function updateButtonVisibility() {
     if (injectedButtons.strikethrough) {
       injectedButtons.strikethrough.style.display = settings.strikethrough !== false ? '' : 'none';
     }
+    if (injectedButtons.insertImageDrive) {
+      injectedButtons.insertImageDrive.style.display = settings.insertImageDrive !== false ? '' : 'none';
+    }
     if (injectedButtons.changeCase) {
       injectedButtons.changeCase.style.display = settings.changeCase !== false ? '' : 'none';
+    }
+    if (injectedButtons.randomizeRange) {
+      injectedButtons.randomizeRange.style.display = settings.randomizeRange !== false ? '' : 'none';
     }
   }
 
@@ -395,7 +520,7 @@
       if (observerTimer) return;
       observerTimer = setTimeout(() => {
         observerTimer = null;
-        if (!document.getElementById(BUTTONS_CONFIG.strikethrough.id)) {
+        if (!document.getElementById(CONTAINER_ID) || !allButtonsPresent()) {
           injectButtons();
         }
       }, 500);

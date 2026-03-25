@@ -1,32 +1,38 @@
 (() => {
   'use strict';
 
-  const DEFAULTS = { strikethrough: true, changeCase: true };
+  const DEFAULTS = {
+    strikethrough: true,
+    changeCase: true,
+    insertImageDrive: true,
+    randomizeRange: true
+  };
+  const KEYS = Object.keys(DEFAULTS);
   const toggles = {};
   const statusEl = () => document.getElementById('status');
 
   function init() {
-    toggles.strikethrough = document.getElementById('toggle-strikethrough');
-    toggles.changeCase = document.getElementById('toggle-changeCase');
-
-    // Load saved settings
-    chrome.storage.sync.get({ enabledButtons: DEFAULTS }, (result) => {
-      const saved = result.enabledButtons;
-      toggles.strikethrough.checked = saved.strikethrough !== false;
-      toggles.changeCase.checked = saved.changeCase !== false;
+    KEYS.forEach((key) => {
+      toggles[key] = document.getElementById(`toggle-${key}`);
     });
 
-    // Listen for changes
-    Object.keys(toggles).forEach((key) => {
+    chrome.storage.sync.get({ enabledButtons: DEFAULTS }, (result) => {
+      const saved = result.enabledButtons;
+      KEYS.forEach((key) => {
+        toggles[key].checked = saved[key] !== false;
+      });
+    });
+
+    KEYS.forEach((key) => {
       toggles[key].addEventListener('change', saveSettings);
     });
   }
 
   function saveSettings() {
-    const enabledButtons = {
-      strikethrough: toggles.strikethrough.checked,
-      changeCase: toggles.changeCase.checked
-    };
+    const enabledButtons = {};
+    KEYS.forEach((key) => {
+      enabledButtons[key] = toggles[key].checked;
+    });
 
     chrome.storage.sync.set({ enabledButtons }, () => {
       showStatus('Settings saved');
